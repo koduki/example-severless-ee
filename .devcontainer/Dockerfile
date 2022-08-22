@@ -14,22 +14,11 @@ ARG GRADLE_VERSION=""
 RUN if [ "${INSTALL_MAVEN}" = "true" ]; then su vscode -c "umask 0002 && . /usr/local/sdkman/bin/sdkman-init.sh && sdk install maven \"${MAVEN_VERSION}\""; fi \
     && if [ "${INSTALL_GRADLE}" = "true" ]; then su vscode -c "umask 0002 && . /usr/local/sdkman/bin/sdkman-init.sh && sdk install gradle \"${GRADLE_VERSION}\""; fi
 
-# [Choice] Node.js version: none, lts/*, 16, 14, 12, 10
-ARG NODE_VERSION="none"
-RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
-
-# [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
-
-# [Optional] Uncomment this line to install global node packages.
-# RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
-
 # Install Google Cloud SDK
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && apt-get update -y && apt-get install google-cloud-sdk -y
 ## Gen Dummy Service Account
-RUN mkdir -p /secret/ && openssl genpkey -out /secret/dummy.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
 RUN <<EOF
+mkdir -p /secret/ && openssl genpkey -out /secret/dummy.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
 cat <<- _DOC_ > /secret/credential.json 
   {
     "type": "service_account",
@@ -49,10 +38,13 @@ EOF
 # Install Quarkus
 RUN su vscode -c "umask 0002 && . /usr/local/sdkman/bin/sdkman-init.sh && sdk install quarkus 2>&1"
 
-# # Docker in Docker
-# RUN apt-get update \
-#     && apt-get install -y apt-transport-https ca-certificates curl gnupg2 lsb-release \
-#     && curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | apt-key add - 2>/dev/null \
-#     && echo "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list \
-#     && apt-get update \
-#     && apt-get install -y docker-ce-cli
+# Podman Install
+RUN <<EOF
+apt -y install podman
+mkdir -p /home/vscode/.config/containers
+cat << _DOC_ > /home/vscode/.config/containers/containers.conf
+[engine]
+events_logger="file"
+_DOC_
+chown -R vscode:vscode /home/vscode/.config/containers
+EOF

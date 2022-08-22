@@ -13,6 +13,7 @@ services:
         - NODE_VERSION=lts/*
     command: sleep infinity
     # init: true
+    privileged: true
     environment:
       - FIRESTORE_EMULATOR_HOST=firestore:6641
       - FIRESTORE_PROJECT_ID=dummy 
