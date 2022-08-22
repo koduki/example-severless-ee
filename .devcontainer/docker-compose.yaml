@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  workspace:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+      args:
+        - VARIANT=17-bullseye
+        - INSTALL_MAVEN=true
+        - MAVEN_VERSION=3.8.5
+        - INSTALL_GRADLE=false
+        - NODE_VERSION=lts/*
+    command: sleep infinity
+    environment:
+      - FIRESTORE_EMULATOR_HOST=firestore:6641
+      - FIRESTORE_PROJECT_ID=dummy 
+      - GOOGLE_APPLICATION_CREDENTIALS=/secret/credential.json
+    volumes:
+      - ..:/workspace:cached
+  firestore:
+    platform: linux/amd64
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk
+    ports:
+        - 6641:6641
+    command:
+      - gcloud
+      - beta
+      - emulators
+      - firestore
+      - start
+      - --project
+      - dummy
+      - --host-port=firestore:6641
+    volumes:
+      - ..:/workspace:cached

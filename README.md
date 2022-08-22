@@ -70,3 +70,4 @@ mvn exec:java -Dexec.mainClass=dev.nklab.examples.GenerateToken -Dexec.classpath
 
 sudo apt-get install google-cloud-sdk-firestore-emulator
 gcloud beta emulators firestore start --project dummy --host-port=localhost:5000
+openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
