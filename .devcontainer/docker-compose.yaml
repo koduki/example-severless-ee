@@ -12,6 +12,7 @@ services:
         - INSTALL_GRADLE=false
         - NODE_VERSION=lts/*
     command: sleep infinity
+    # init: true
     environment:
       - FIRESTORE_EMULATOR_HOST=firestore:6641
       - FIRESTORE_PROJECT_ID=dummy 

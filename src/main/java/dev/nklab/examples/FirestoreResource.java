@@ -19,8 +19,12 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
 @Path("/firestore")
 public class FirestoreResource {
+
+    @RegisterForReflection
     public static class Person {
         private long id;
         private String firstname;
