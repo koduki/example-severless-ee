@@ -21,7 +21,7 @@ services:
       - ..:/workspace:cached
   firestore:
     platform: linux/amd64
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk
+    image: google/cloud-sdk
     ports:
         - 6641:6641
     command:
