@@ -71,3 +71,9 @@ mvn exec:java -Dexec.mainClass=dev.nklab.examples.GenerateToken -Dexec.classpath
 sudo apt-get install google-cloud-sdk-firestore-emulator
 gcloud beta emulators firestore start --project dummy --host-port=localhost:5000
 openssl genpkey -out rsakey.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+
+./mvnw package -Pnative
+podman build -t  gcr.io/sandbox-svc-dev-8rra/frontend  -f src/main/docker/Dockerfile.native-micro .
+gcloud auth print-access-token | podman login -u oauth2accesstoken --password-stdin gcr.io
+podman push gcr.io/sandbox-svc-dev-8rra/frontend
+gcloud run deploy frontend --image gcr.io/sandbox-svc-dev-8rra/frontend --region asia-northeast1 --allow-unauthenticated
