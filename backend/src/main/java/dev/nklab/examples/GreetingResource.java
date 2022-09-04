@@ -16,9 +16,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-import javax.ws.rs.client.ClientBuilder;
-import java.net.http.*;
-import java.net.URI;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import com.google.cloud.opentelemetry.trace.*;
@@ -35,7 +32,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.context.propagation.*;
 
-@Path("/hello")
+@Path("/hello2")
 public class GreetingResource {
     public static class LoginResponse {
         public final String userId;
@@ -60,22 +57,12 @@ public class GreetingResource {
     @Path("permit-all")
     @PermitAll
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(@Context SecurityContext ctx, @Context HttpHeaders headers)
-            throws IOException, java.lang.InterruptedException {
+    public String hello(@Context SecurityContext ctx, @Context HttpHeaders headers) throws IOException {
         var context = dt.getContext(headers);
         try (Scope scope = context.makeCurrent()) {
             Span span = dt.getTracer().spanBuilder("call say hello8").startSpan();
             try {
                 System.out.println(service.bonjour());
-                var client = HttpClient.newHttpClient();
-                var request = HttpRequest
-                        .newBuilder(URI.create("https://backend-q2m6ttsgja-du.a.run.app/hello2/permit-all"))
-                        .header("accept", "application/json")
-                        .build();
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                // the response:
-                System.out.println(response.body());
             } finally {
                 span.end();
             }
