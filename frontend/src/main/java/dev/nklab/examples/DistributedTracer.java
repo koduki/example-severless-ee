@@ -25,6 +25,7 @@ import io.opentelemetry.context.propagation.*;
 import io.opentelemetry.context.Context;
 
 import javax.ws.rs.core.HttpHeaders;
+import java.net.http.*;
 
 @ApplicationScoped
 class DistributedTracer {
@@ -46,14 +47,21 @@ class DistributedTracer {
         }
     };
 
+    TextMapSetter<HttpRequest.Builder> setter = new TextMapSetter<HttpRequest.Builder>() {
+        @Override
+        public void set(HttpRequest.Builder builder, String key, String value) {
+            builder.header(key, value);
+        }
+    };
+
     private OpenTelemetry openTelemetry;
 
     void onStartup(@Observes StartupEvent event) throws IOException {
-        TraceExporter traceExporter = TraceExporter.createWithConfiguration(
+        TraceExporter googleExporter = TraceExporter.createWithConfiguration(
                 TraceConfiguration.builder().setProjectId("sandbox-svc-dev-8rra").build());
 
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(traceExporter))
+                .addSpanProcessor(SimpleSpanProcessor.create(googleExporter))
                 .build();
 
         openTelemetry = OpenTelemetrySdk.builder()
@@ -70,5 +78,9 @@ class DistributedTracer {
     public Context getContext(HttpHeaders headers) {
         return openTelemetry.getPropagators().getTextMapPropagator()
                 .extract(Context.current(), headers, getter);
+    }
+
+    public void inject(Context context, HttpRequest.Builder builder) {
+        openTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), builder, setter);
     }
 }

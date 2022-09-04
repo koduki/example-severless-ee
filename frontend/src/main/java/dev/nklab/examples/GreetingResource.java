@@ -37,6 +37,7 @@ import io.opentelemetry.context.propagation.*;
 
 @Path("/hello")
 public class GreetingResource {
+
     public static class LoginResponse {
         public final String userId;
         public final String token;
@@ -70,9 +71,10 @@ public class GreetingResource {
                 var client = HttpClient.newHttpClient();
                 var request = HttpRequest
                         .newBuilder(URI.create("https://backend-q2m6ttsgja-du.a.run.app/hello2/permit-all"))
-                        .header("accept", "application/json")
-                        .build();
-                var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        // .header("accept", "application/json")
+                        .GET();
+                dt.inject(context, request);
+                var response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
 
                 // the response:
                 System.out.println(response.body());
