@@ -1,88 +1,89 @@
 package dev.nklab.examples;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutures;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import com.google.cloud.opentelemetry.trace.*;
 
-@Path("/firestore")
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.context.propagation.*;
+
+import dev.nklab.examples.dto.*;
+
+@Path("/api")
 public class FirestoreResource {
 
-    @RegisterForReflection
-    public static class Person {
-        private long id;
-        private String firstname;
-        private String lastname;
-
-        public Person(long id, String firstname, String lastname) {
-            this.id = id;
-            this.firstname = firstname;
-            this.lastname = lastname;
-        }
-
-        public long getId() {
-            return id;
-        }
-
-        public void setId(long id) {
-            this.id = id;
-        }
-
-        public String getFirstname() {
-            return firstname;
-        }
-
-        public void setFirstname(String firstname) {
-            this.firstname = firstname;
-        }
-
-        public String getLastname() {
-            return lastname;
-        }
-
-        public void setLastname(String lastname) {
-            this.lastname = lastname;
-        }
-    }
+    @Inject
+    PersonService service;
 
     @Inject
-    Firestore firestore; // Inject Firestore
+    ArticleService articleService;
 
-    @GET
+    // @Inject
+    // DistributedTracer dt;
+
+    @GET()
+    @Path("firestore")
+    @PermitAll
     @Produces(MediaType.TEXT_PLAIN)
-    public String firestore() throws ExecutionException, InterruptedException {
-        // Insert 3 persons
-        CollectionReference persons = firestore.collection("persons");
-        List<ApiFuture<WriteResult>> futures = new ArrayList<>();
-        futures.add(persons.document("1").set(new Person(1L, "John", "Doe")));
-        futures.add(persons.document("2").set(new Person(2L, "Jane", "Doe")));
-        futures.add(persons.document("3").set(new Person(3L, "Charles", "Baudelaire")));
-        futures.add(persons.document("4").set(new Person(4L, "Charles", "ssss")));
+    public String firestore(@Context SecurityContext ctx, @Context HttpHeaders headers)
+            throws IOException, ExecutionException, InterruptedException {
+        // var context = dt.getContext(headers);
+        var msg = "";
+        // try (Scope scope = context.makeCurrent()) {
+        // Span span = dt.getTracer().spanBuilder("call firestore").startSpan();
+        // try {
+        // msg = service.run();
+        // } finally {
+        // span.end();
+        // }
+        // }
 
-        ApiFutures.allAsList(futures).get();
+        return msg;
+    }
 
-        // Search for lastname=Doe
-        Query query = persons.whereEqualTo("lastname", "ssss");
-        ApiFuture<QuerySnapshot> querySnapshot = query.get();
-        return querySnapshot.get().getDocuments().stream()
-                .map(document -> document.getId() + " - " + document.getString("firstname") + " "
-                        + document.getString("lastname") + "\n")
-                .collect(Collectors.joining());
+    @GET()
+    @Path("post")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String post(@Context SecurityContext ctx, @Context HttpHeaders headers)
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.post();
+        return msg;
+    }
+
+    @GET()
+    @Path("list")
+    @PermitAll
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ArticleDTO> list(@Context SecurityContext ctx, @Context HttpHeaders headers)
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.list();
+        return msg;
     }
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.enterprise.context.Dependent;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -21,8 +22,8 @@ import com.google.cloud.firestore.WriteResult;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
-@Path("/firestore")
-public class FirestoreResource {
+@Dependent
+public class PersonService {
 
     @RegisterForReflection
     public static class Person {
@@ -64,9 +65,8 @@ public class FirestoreResource {
     @Inject
     Firestore firestore; // Inject Firestore
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String firestore() throws ExecutionException, InterruptedException {
+  
+    public String run() throws ExecutionException, InterruptedException {
         // Insert 3 persons
         CollectionReference persons = firestore.collection("persons");
         List<ApiFuture<WriteResult>> futures = new ArrayList<>();

@@ -20,6 +20,7 @@ import javax.ws.rs.client.ClientBuilder;
 import java.net.http.*;
 import java.net.URI;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import com.google.cloud.opentelemetry.trace.*;
 
@@ -52,10 +53,10 @@ public class GreetingResource {
     JsonWebToken jwt;
 
     @Inject
-    FrancophoneService service;
-
-    @Inject
     DistributedTracer dt;
+
+    @ConfigProperty(name = "my.secret.pass")
+    String password;
 
     @GET()
     @Path("permit-all")
@@ -64,26 +65,27 @@ public class GreetingResource {
     public String hello(@Context SecurityContext ctx, @Context HttpHeaders headers)
             throws IOException, java.lang.InterruptedException {
         var context = dt.getContext(headers);
-        try (Scope scope = context.makeCurrent()) {
-            Span span = dt.getTracer().spanBuilder("call say hello8").startSpan();
-            try {
-                System.out.println(service.bonjour());
-                var client = HttpClient.newHttpClient();
-                var request = HttpRequest
-                        .newBuilder(URI.create("https://backend-q2m6ttsgja-du.a.run.app/hello2/permit-all"))
-                        // .header("accept", "application/json")
-                        .GET();
-                dt.inject(context, request);
-                var response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
+        var msg = "";
+        System.out.println("password: " + password);
+        // try (Scope scope = context.makeCurrent()) {
+        //     Span span = dt.getTracer().spanBuilder("call API").startSpan();
+        //     try {
+        //         var client = HttpClient.newHttpClient();
+        //         var request = HttpRequest
+        //                 .newBuilder(URI.create("https://backend-q2m6ttsgja-du.a.run.app/api/firestore"))
+        //                 // .header("accept", "application/json")
+        //                 .GET();
+        //         dt.inject(context, request);
+        //         var response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
 
-                // the response:
-                System.out.println(response.body());
-            } finally {
-                span.end();
-            }
-        }
+        //         // the response:
+        //         msg = response.body();
+        //     } finally {
+        //         span.end();
+        //     }
+        // }
 
-        return getResponseString(ctx);
+        return getResponseString(ctx) + ", firestore4: " + msg;
     }
 
     @GET
