@@ -1,6 +1,5 @@
 package dev.nklab.examples;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,20 +8,11 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.enterprise.context.Dependent;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
-import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
-import com.google.cloud.firestore.FieldValue;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import dev.nklab.examples.entity.*;
 import dev.nklab.examples.dto.*;
@@ -37,23 +27,56 @@ public class ArticleService {
         var articles = firestore.collection("articles");
         List<ApiFuture<WriteResult>> futures = new ArrayList<>();
         futures.add(
-                articles.document().set(new Article("koduki", "2022-01-01", "my-contents", Arrays.asList("MyTag"))));
+                articles.document().set(new Article("misuzu", "2022-01-01", "my-contents", Arrays.asList("MyTag"))));
 
         ApiFutures.allAsList(futures).get();
 
         return "OK";
     }
 
-    public List<ArticleDTO> list() throws ExecutionException, InterruptedException {
+    public String reply(String parentId) throws ExecutionException, InterruptedException {
+        var articles = firestore.collection("articles");
+        parentId = "7JuNYOQMn5AP7E1w0uwN";
+        var doc = articles.document(parentId);
+        var article = doc.get().get();
+        var comments = (List<Comment>) article.get("comments");
+        comments.add(new Comment("koduki", "2022-03-04", "hello2"));
+
+        doc.update("comments", comments);
+
+        return "OK";
+    }
+
+    public List<ArticleDTO> list(String author) throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
 
-        var query = articles.whereEqualTo("author", "koduki");
-        var querySnapshot = query.get();
+        var query = articles.whereEqualTo("author", author);
+        var querySnapshot = query.get().get();
 
-        return querySnapshot.get().getDocuments().stream()
-                .map(doc -> new ArticleDTO(doc.getId(), doc.getString("author"), doc.getString("date"),
-                        doc.getString("contents"), (List<String>) doc.get("tags")))
+        return querySnapshot.getDocuments().stream()
+                .map(doc -> new ArticleDTO(doc))
                 .collect(Collectors.toList());
     }
 
+    public List<ArticleDTO> search() throws ExecutionException, InterruptedException {
+        var articles = firestore.collection("articles");
+
+        var query = articles.whereEqualTo("tags.foo", 1);
+        var querySnapshot = query.get().get();
+
+        return querySnapshot.getDocuments().stream()
+                .map(doc -> new ArticleDTO(doc))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> tags() throws ExecutionException, InterruptedException {
+        var articles = firestore.collection("articles");
+
+        var querySnapshot = articles.get().get();
+        return querySnapshot.getDocuments().stream()
+                .map(doc -> (List<String>) doc.get("tags"))
+                .flatMap(x -> x.stream())
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }

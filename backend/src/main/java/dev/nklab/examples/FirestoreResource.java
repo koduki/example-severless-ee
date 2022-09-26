@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -46,7 +47,6 @@ public class FirestoreResource {
 
     // @Inject
     // DistributedTracer dt;
-
     @GET()
     @Path("firestore")
     @PermitAll
@@ -78,12 +78,42 @@ public class FirestoreResource {
     }
 
     @GET()
-    @Path("list")
+    @Path("comment/{parentid}")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String comment(@PathParam("parentid") final String parentid)
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.reply(parentid);
+        return msg;
+    }
+
+    @GET()
+    @Path("list/{user}")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ArticleDTO> list(@Context SecurityContext ctx, @Context HttpHeaders headers)
+    public List<ArticleDTO> list(@PathParam("user") final String user)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.list();
+        var msg = articleService.list(user);
+        return msg;
+    }
+
+    @GET()
+    @Path("search")
+    @PermitAll
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ArticleDTO> search()
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.search();
+        return msg;
+    }
+
+    @GET()
+    @Path("tags")
+    @PermitAll
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<String> tags()
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.tags();
         return msg;
     }
 }
