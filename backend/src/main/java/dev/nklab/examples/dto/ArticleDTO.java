@@ -2,18 +2,20 @@ package dev.nklab.examples.dto;
 
 import java.util.List;
 import com.google.cloud.firestore.*;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ArticleDTO extends dev.nklab.examples.entity.Article {
 
     private String id;
 
-    public ArticleDTO(String id, String author, String date, String contents, List<String> tags) {
-        super(author, date, contents, tags);
-        this.id = id;
+    private static ZonedDateTime toDateTime(String date) {
+        var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssZ");
+        return ZonedDateTime.parse(date, formatter);
     }
 
     public ArticleDTO(QueryDocumentSnapshot doc) {
-        super(doc.getString("author"), doc.getString("date"), doc.getString("contents"),
+        super(doc.getString("author"), toDateTime(doc.getString("date")), doc.getString("contents"),
                 (List<String>) doc.get("tags"));
         this.id = doc.getId();
     }

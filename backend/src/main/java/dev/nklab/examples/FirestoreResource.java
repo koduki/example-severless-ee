@@ -73,7 +73,7 @@ public class FirestoreResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String post(@Context SecurityContext ctx, @Context HttpHeaders headers)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.post();
+        var msg = articleService.postArticle();
         return msg;
     }
 
@@ -111,7 +111,7 @@ public class FirestoreResource {
     @Path("tags")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> tags()
+    public  Map<String, Map<String, String>> tags()
             throws IOException, ExecutionException, InterruptedException {
         var msg = articleService.tags();
         return msg;
