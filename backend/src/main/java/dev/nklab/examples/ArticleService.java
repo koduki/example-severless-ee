@@ -13,6 +13,7 @@ import javax.enterprise.context.Dependent;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.WriteResult;
 
 import dev.nklab.examples.entity.*;
@@ -84,7 +85,7 @@ public class ArticleService {
     public List<ArticleDTO> list(String author) throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
 
-        var query = articles.whereEqualTo("author", author);
+        var query = articles.whereEqualTo("author", author).orderBy("date", Query.Direction.DESCENDING);
         var querySnapshot = query.get().get();
 
         return querySnapshot.getDocuments().stream()
