@@ -35,6 +35,8 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.context.propagation.*;
 
 import dev.nklab.examples.dto.*;
+import java.util.Arrays;
+import javax.ws.rs.QueryParam;
 
 @Path("/api")
 public class FirestoreResource {
@@ -73,17 +75,19 @@ public class FirestoreResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String post(@Context SecurityContext ctx, @Context HttpHeaders headers)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.postArticle();
+        var tags = Arrays.asList("MyTag", "MyTag2", "MyTag3");
+
+        var msg = articleService.postArticle("misuzu", "Hello World", tags);
         return msg;
     }
 
     @GET()
-    @Path("comment/{parentid}")
+    @Path("comment")
     @PermitAll
     @Produces(MediaType.TEXT_PLAIN)
-    public String comment(@PathParam("parentid") final String parentid)
+    public String comment(@QueryParam("parentid") final String parentid)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.reply(parentid);
+        var msg = articleService.reply(parentid, "koduki", "Hello Reply");
         return msg;
     }
 
@@ -91,9 +95,9 @@ public class FirestoreResource {
     @Path("list/{user}")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ArticleDTO> list(@PathParam("user") final String user)
+    public List<ArticleDTO> list(@PathParam("user") final String user, @QueryParam("offset") int offset, @QueryParam("limit") int limit)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.list(user);
+        var msg = articleService.list(user, offset, limit);
         return msg;
     }
 
@@ -101,9 +105,9 @@ public class FirestoreResource {
     @Path("search")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ArticleDTO> search()
+    public List<ArticleDTO> search(@QueryParam("tag") String tag, @QueryParam("offset") int offset, @QueryParam("limit") int limit)
             throws IOException, ExecutionException, InterruptedException {
-        var msg = articleService.search();
+        var msg = articleService.search(List.of(tag), offset, limit);
         return msg;
     }
 
@@ -111,7 +115,7 @@ public class FirestoreResource {
     @Path("tags")
     @PermitAll
     @Produces(MediaType.APPLICATION_JSON)
-    public  Map<String, Map<String, String>> tags()
+    public Map<String, Map<String, String>> tags()
             throws IOException, ExecutionException, InterruptedException {
         var msg = articleService.tags();
         return msg;

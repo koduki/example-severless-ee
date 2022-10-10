@@ -1,16 +1,28 @@
 package dev.nklab.examples.dto;
 
-public class CommentDTO extends dev.nklab.examples.entity.Comment {
+import java.util.Map;
 
-    private String id;
+public class CommentDTO {
 
-    public CommentDTO(String id, String author, String date, String contents) {
-        super(author, date, contents);
-        this.id = id;
+    private  String author;
+    private  String date;
+    private  String contents;
+
+    public CommentDTO(Map<String, String> comment) {
+        this.author = comment.get("author");
+        this.date = comment.get("date");
+        this.contents = comment.get("contents");
     }
 
-    public String getId() {
-        return id;
+    public String getAuthor() {
+        return author;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public String getContents() {
+        return contents;
+    }
 }

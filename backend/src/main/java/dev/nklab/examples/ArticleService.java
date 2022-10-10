@@ -40,13 +40,12 @@ public class ArticleService {
         }
     }
 
-    public String postArticle() throws ExecutionException, InterruptedException {
-        var tags = Arrays.asList("MyTag", "MyTag2", "MyTag3");
+    public String postArticle(String author, String contents, List<String> tags) throws ExecutionException, InterruptedException {
+        postTags(tags);
 
         var articles = firestore.collection("articles");
         var docs = new ArrayList<ApiFuture<WriteResult>>();
-        docs.add(
-                articles.document().set(new Article("misuzu", ZonedDateTime.now(), "my-contents", tags)));
+        docs.add(articles.document().set(new Article(author, ZonedDateTime.now(), contents, tags)));
 
         return "Update time : " + ApiFutures.allAsList(docs).get().get(0).getUpdateTime();
     }
@@ -60,32 +59,25 @@ public class ArticleService {
 
     }
 
-    private Map<String, String> getTagMapper() throws InterruptedException, ExecutionException {
-        var db = firestore.collection("tags");
-
-        var querySnapshot = db.get().get();
-        return querySnapshot.getDocuments().stream()
-                .map(doc -> List.of(doc.getId(), doc.getString("value")))
-                .collect(Collectors.toMap(xs -> xs.get(0), xs -> xs.get(1)));
-    }
-
-    public String reply(String parentId) throws ExecutionException, InterruptedException {
+    public String reply(String parentId, String author, String contents) throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
-        parentId = "7JuNYOQMn5AP7E1w0uwN";
         var doc = articles.document(parentId);
         var article = doc.get().get();
         var comments = (List<Comment>) article.get("comments");
-        comments.add(new Comment("koduki", "2022-03-04", "hello2"));
+        comments.add(new Comment(author, ZonedDateTime.now(), contents));
 
         doc.update("comments", comments);
 
         return "OK";
     }
 
-    public List<ArticleDTO> list(String author) throws ExecutionException, InterruptedException {
+    public List<ArticleDTO> list(String author, int offset, int limit) throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
 
-        var query = articles.whereEqualTo("author", author).orderBy("date", Query.Direction.DESCENDING);
+        var query = articles.whereEqualTo("author", author)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .offset(offset)
+                .limit(limit);
         var querySnapshot = query.get().get();
 
         return querySnapshot.getDocuments().stream()
@@ -93,10 +85,12 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleDTO> search() throws ExecutionException, InterruptedException {
+    public List<ArticleDTO> search(List<String> tags, int offset, int limit) throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
-        var tags = List.of("MyTag", "MyTag2");
-        var query = articles.whereArrayContainsAny("tags", tags);
+        var query = articles.whereArrayContainsAny("tags", tags)
+                .orderBy("date", Query.Direction.DESCENDING)
+                .offset(offset)
+                .limit(limit);
         var querySnapshot = query.get().get();
 
         return querySnapshot.getDocuments().stream()

@@ -7,11 +7,11 @@ import java.util.List;
 
 public class Article {
 
-    protected String author;
-    protected ZonedDateTime date;
-    protected String contents;
-    protected List<String> tags;
-    protected List<Comment> comments;
+    private final String author;
+    private final ZonedDateTime date;
+    private final String contents;
+    private final List<String> tags;
+    private final List<Comment> comments;
 
     public Article(String author, ZonedDateTime date, String contents, List<String> tags) {
         this.author = author;
