@@ -1,8 +1,10 @@
 package dev.nklab.examples.dto;
 
 import java.util.List;
+
 import com.google.cloud.firestore.*;
 import dev.nklab.examples.Commons;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -10,12 +12,13 @@ import java.util.stream.Collectors;
 
 public class ArticleDTO {
 
-    private  String id;
-    private  String author;
-    private  ZonedDateTime date;
-    private  String contents;
-    private  List<String> tags;
-    private  List<CommentDTO> comments;
+    private String id;
+    private String author;
+    private ZonedDateTime date;
+    private String contents;
+    private List<String> tags;
+    private List<CommentDTO> comments;
+    private List<FavoDTO> favos;
 
     public ArticleDTO(QueryDocumentSnapshot doc) {
 
@@ -25,6 +28,7 @@ public class ArticleDTO {
         this.contents = doc.getString("contents");
         this.tags = (List<String>) doc.get("tags");
         this.comments = ((List<Map<String, String>>) doc.get("comments")).stream().map(x -> new CommentDTO(x)).collect(Collectors.toList());
+        this.favos = ((List<Map<String, String>>) doc.get("favos")).stream().map(x -> new FavoDTO(x)).collect(Collectors.toList());
     }
 
     public String getId() {
@@ -52,4 +56,7 @@ public class ArticleDTO {
         return comments;
     }
 
+    public List<FavoDTO> getFavos() {
+        return favos;
+    }
 }

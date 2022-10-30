@@ -12,6 +12,7 @@ public class Article {
     private final String contents;
     private final List<String> tags;
     private final List<Comment> comments;
+    private final List<Favo> favos;
 
     public Article(String author, ZonedDateTime date, String contents, List<String> tags) {
         this.author = author;
@@ -19,6 +20,7 @@ public class Article {
         this.contents = contents;
         this.tags = tags;
         this.comments = new ArrayList<>();
+        this.favos = new ArrayList<>();
     }
 
     public String getAuthor() {
@@ -42,4 +44,7 @@ public class Article {
         return comments;
     }
 
+    public List<Favo> getFavos() {
+        return favos;
+    }
 }

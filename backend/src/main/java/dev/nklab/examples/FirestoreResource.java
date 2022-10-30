@@ -35,6 +35,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.context.propagation.*;
 
 import dev.nklab.examples.dto.*;
+
 import java.util.Arrays;
 import javax.ws.rs.QueryParam;
 
@@ -88,6 +89,16 @@ public class FirestoreResource {
     public String comment(@QueryParam("parentid") final String parentid)
             throws IOException, ExecutionException, InterruptedException {
         var msg = articleService.reply(parentid, "koduki", "Hello Reply");
+        return msg;
+    }
+
+    @GET()
+    @Path("favo")
+    @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
+    public String favo(@QueryParam("parentid") final String parentid)
+            throws IOException, ExecutionException, InterruptedException {
+        var msg = articleService.favo(parentid, "koduki");
         return msg;
     }
 

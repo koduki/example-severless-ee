@@ -18,6 +18,7 @@ import com.google.cloud.firestore.WriteResult;
 
 import dev.nklab.examples.entity.*;
 import dev.nklab.examples.dto.*;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +41,8 @@ public class ArticleService {
         }
     }
 
-    public String postArticle(String author, String contents, List<String> tags) throws ExecutionException, InterruptedException {
+    public String postArticle(String author, String contents, List<String> tags)
+            throws ExecutionException, InterruptedException {
         postTags(tags);
 
         var articles = firestore.collection("articles");
@@ -59,7 +61,8 @@ public class ArticleService {
 
     }
 
-    public String reply(String parentId, String author, String contents) throws ExecutionException, InterruptedException {
+    public String reply(String parentId, String author, String contents)
+            throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
         var doc = articles.document(parentId);
         var article = doc.get().get();
@@ -67,6 +70,33 @@ public class ArticleService {
         comments.add(new Comment(author, ZonedDateTime.now(), contents));
 
         doc.update("comments", comments);
+
+        return "OK";
+    }
+
+    public String favo(String parentId, String author) throws ExecutionException, InterruptedException {
+        var articles = firestore.collection("articles");
+        var doc = articles.document(parentId);
+        var article = doc.get().get();
+        var favos = ((java.util.List<Map<String, String>>) article.get("favos")).stream()
+                .map(x -> new Favo(x.get("author"), x.get("date")))
+                .collect(Collectors.toList());
+
+        System.out.println(favos);
+
+        var idx = 0;
+        for (idx = 0; idx < favos.size(); idx++) {
+            var x = favos.get(idx);
+            if (x.getAuthor().equals(author)) {
+                favos.remove(idx);
+                idx = -1;
+                break;
+            }
+        }
+        if (idx != -1) {
+            favos.add(new Favo(author, ZonedDateTime.now()));
+        }
+        doc.update("favos", favos);
 
         return "OK";
     }
@@ -85,7 +115,8 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    public List<ArticleDTO> search(List<String> tags, int offset, int limit) throws ExecutionException, InterruptedException {
+    public List<ArticleDTO> search(List<String> tags, int offset, int limit)
+            throws ExecutionException, InterruptedException {
         var articles = firestore.collection("articles");
         var query = articles.whereArrayContainsAny("tags", tags)
                 .orderBy("date", Query.Direction.DESCENDING)
@@ -108,11 +139,10 @@ public class ArticleService {
                 .collect(Collectors.groupingBy(x -> x))
                 .entrySet().stream()
                 .map(xs -> List.of(
-                getTagId(xs.getKey()),
-                Map.of(
-                        "value", xs.getKey(),
-                        "count", xs.getValue().size()
-                )))
+                        getTagId(xs.getKey()),
+                        Map.of(
+                                "value", xs.getKey(),
+                                "count", xs.getValue().size())))
                 .collect(Collectors.toMap(xs -> (String) xs.get(0), xs -> (Map<String, String>) xs.get(1)));
     }
 }
