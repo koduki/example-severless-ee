@@ -1,0 +1,177 @@
+---
+openapi: 3.0.3
+info:
+  title: backend-api API
+  version: 1.0.0-SNAPSHOT
+paths:
+  /api/comment:
+    get:
+      tags:
+      - Firestore Resource
+      parameters:
+      - name: parentid
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/favo:
+    get:
+      tags:
+      - Firestore Resource
+      parameters:
+      - name: parentid
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/firestore:
+    get:
+      tags:
+      - Firestore Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/list/{user}:
+    get:
+      tags:
+      - Firestore Resource
+      parameters:
+      - name: user
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          format: int32
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArticleDTO'
+  /api/post:
+    get:
+      tags:
+      - Firestore Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/search:
+    get:
+      tags:
+      - Firestore Resource
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          format: int32
+          type: integer
+      - name: tag
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArticleDTO'
+  /api/tags:
+    get:
+      tags:
+      - Firestore Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: string
+components:
+  schemas:
+    ArticleDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        author:
+          type: string
+        date:
+          $ref: '#/components/schemas/ZonedDateTime'
+        contents:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentDTO'
+        favos:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoDTO'
+    CommentDTO:
+      type: object
+      properties:
+        author:
+          type: string
+        date:
+          type: string
+        contents:
+          type: string
+    FavoDTO:
+      type: object
+      properties:
+        author:
+          type: string
+        date:
+          type: string
+    ZonedDateTime:
+      format: date-time
+      type: string
+      example: 2022-03-10T12:15:50-04:00
